@@ -1,7 +1,8 @@
 
 **Package Overview**
 
-Implements the Expectation Maximisation Algorithm for clustering the multivariate and univariate datasets. The package has been tested with numerical datasets (not recommended for categorical/ordinal data). The package comes bundled with a dataset for demonstration (ionosphere_data.csv). More help about the package can be seen by typing `?DCEM` in the R console (after installing the package).
+Implements the Expectation Maximisation Algorithm for clustering the multivariate and univariate datasets. There are two versions of EM implemented- EM and EM* (converge faster by avoiding revisiting the data). For more details on EM\*, see the 'References' section below.  
+The package has been tested with numerical datasets (not recommended for categorical/ordinal data). The package comes bundled with a dataset for demonstration (ionosphere_data.csv). More help about the package can be seen by typing `?DCEM` in the R console (after installing the package).
 
 **Currently, data imputation is not supported and user has to handle the missing data before using the package.**
 
@@ -94,8 +95,9 @@ dcem_out = dcem_train(data = ionosphere_data, threshold = 0.0001, iteration_coun
 *How to access the help (after installing the package)*
 
 ```
-?dcem_train()
-?dcem_test()
+?dcem_star_train
+?dcem_train
+?dcem_test
 ?DCEM
 ```
 

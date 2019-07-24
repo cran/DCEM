@@ -37,18 +37,18 @@ require(matrixcalc)
 #'         Gaussian(s) (posterior probabilities, mean, co-variance and priors)
 #'
 #'\enumerate{
-#'         \item [1] Posterior Probabilities:  \strong{sample_out$prob}
+#'         \item (1) Posterior Probabilities:  \strong{sample_out$prob}
 #'         (a matrix of posterior-probabilities for the points in the dataset.)
 #'
-#'         \item [2] Mean(s): \strong{sample_out$mean}
+#'         \item (2) Mean(s): \strong{sample_out$mean}
 #'
 #'         For multivariate data: It is a matrix of means for the Gaussian(s). Each row in
 #'         the  matrix corresponds to a mean for the Gaussian.
 #'
-#'         \item [3] Co-variance matrices (in case of multivariate data): \strong{sample_out$cov}
+#'         \item (3) Co-variance matrices (in case of multivariate data): \strong{sample_out$cov}
 #'         (list of co-variance matrices for the Gaussian(s))
 #'
-#'         \item [4] Priors: \strong{sample_out$prior}
+#'         \item (4) Priors: \strong{sample_out$prior}
 #'         (a vector of priors for the Gaussian(s).)
 #'         }
 #'
@@ -60,7 +60,7 @@ require(matrixcalc)
 #'Using data to build a better EM: EM* for big data.
 #'
 #' Hasan Kurban, Mark Jenne, Mehmet M. Dalkilic
-#'(2016) <doi:https://doi.org/10.1007/s41060-017-0062-1>.
+#' (2016) <https://doi.org/10.1007/s41060-017-0062-1>.
 #'
 #' @author Parichit Sharma \email{parishar@iu.edu}, Hasan Kurban, Mark Jenne, Mehmet Dalkilic
 #'
