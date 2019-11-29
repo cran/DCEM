@@ -4,61 +4,46 @@
 \alias{dcem_star_cluster_uv}
 \title{dcem_star_cluster_uv (univariate data): Part of DCEM package.}
 \usage{
-dcem_star_cluster_uv(data, mean_vector, sd_vector, prior_vec, num, iteration_count,
-threshold, numrows, numcols)
+dcem_star_cluster_uv(data, meu, sigma, prior, num_clusters, num_data,
+iteration_count)
 }
 \arguments{
-\item{data}{(matrix): The dataset provided by the user (converted to matrix format).}
+\item{data}{(matrix): The dataset provided by the user.}
 
-\item{mean_vector}{(vector): The vector containing the initial means of the Gaussians.}
+\item{meu}{(vector): The vector containing the initial meu.}
 
-\item{sd_vector}{(vector): The vector containing the initial standard deviation for the Gaussians. The initial
-sd are set to be 1. They are updated during the iterations of the algorithm.}
+\item{sigma}{(vector): The vector containing the initial standard deviation.}
 
-\item{prior_vec}{(vector): The vector containing the initial priors for the Gaussians (initialized
-uniformly).}
+\item{prior}{(vector): The vector containing the initial priors.}
 
-\item{num}{(numeric): The number of clusters specified by the user. Default is 2.}
+\item{num_clusters}{(numeric): The number of clusters specified by the user. Default is 2.}
 
-\item{iteration_count}{(numeric): The number of iterations for which the algorithm should run. If the
-convergence is not achieved within the specified threshold then the algorithm stops and exits.
-Default is 200.}
+\item{num_data}{(numeric): number of rows in the dataset (After processing the missing values).}
 
-\item{threshold}{(numeric): A small value to check for convergence (if the estimated mean(s) are within this
-specified threshold then the algorithm stops and exit).
-
-\strong{Note: Choosing a very small value (0.0000001) for threshold can increase the runtime substantially
-and the algorithm may not converge. On the other hand, choosing a larger value (0.1)
-can lead to sub-optimal clustering. Default is 0.00001}.}
-
-\item{numrows}{(numeric): Number of rows in the dataset (After processing the missing values).}
-
-\item{numcols}{(numeric): Number of columns in the dataset (After processing the missing values).}
+\item{iteration_count}{(numeric): The number of iterations for which the algorithm should run.
+If the convergence is not achieved then the algorithm stops. Default is 100.}
 }
 \value{
 A list of objects. This list contains parameters associated with the
-        Gaussian(s) (posterior probabilities, mean, co-variance/standard-deviation and priors)
+        Gaussian(s) (posterior probabilities, meu, standard-deviation and priors)
 
 \enumerate{
-        \item (1) Posterior Probabilities: \strong{sample_out$prob}
+        \item (1) Posterior Probabilities: \strong{prob}
         A matrix of posterior-probabilities
 
-        \item (2) Mean(s): \strong{sample_out$mean}
+        \item (2) Meu: \strong{meu}: It is a vector of meus. Each element of
+        the vector corresponds to one meu.
 
-        For univariate data: It is a vector of means. Each element of the vector
-        corresponds to one Gaussian.
+        \item (3) Sigma: Standard-deviation(s): \strong{sigma}
 
-        \item (3) Standard-deviation(s): \strong{sample_out$sd}
+        For univariate data: Vector of standard deviation.
 
-        For univariate data: Vector of standard deviation for the Gaussian(s))
-
-        \item (4) Priors: \strong{sample_out$prior}
-        A vector of priors for the Gaussian(s).
+        \item (4) Priors: \strong{prior}: A vector of priors.
         }
 }
 \description{
-Implements the EM* algorithm for the univariate data. This function is internally
-called by the dcem_star_train routine.
+Implements the EM* algorithm for the univariate data. This function is called by the
+dcem_star_train routine.
 }
 \references{
 Hasan Kurban, Mark Jenne, Mehmet M. Dalkilic

@@ -4,58 +4,44 @@
 \alias{dcem_star_cluster_mv}
 \title{dcem_star_cluster_mv (multivariate data): Part of DCEM package.}
 \usage{
-dcem_star_cluster_mv(data, mean_mat, cov_list, prior_vec, num, iteration_count,
-threshold, numrows, numcols)
+dcem_star_cluster_mv(data, meu, sigma, prior, num_clusters, iteration_count, num_data)
 }
 \arguments{
-\item{data}{A matrix: The dataset provided by the user.}
+\item{data}{(matrix): The dataset provided by the user.}
 
-\item{mean_mat}{(matrix): The matrix containing the initial mean(s) for the Gaussian(s).}
+\item{meu}{(matrix): The matrix containing the initial meu(s).}
 
-\item{cov_list}{(list): A list containing the initial covariance matrices for the Gaussian(s).}
+\item{sigma}{(list): A list containing the initial covariance matrices.}
 
-\item{prior_vec}{(vector): A vector containing the initial priors for the Gaussian(s).}
+\item{prior}{(vector): A vector containing the initial priors.}
 
-\item{num}{(numeric): The number of clusters specified by the user. Default value is 2.}
+\item{num_clusters}{(numeric): The number of clusters specified by the user. Default value is 2.}
 
 \item{iteration_count}{(numeric): The number of iterations for which the algorithm should run, if the
-convergence is not achieved within the specified threshold then the algorithm stops and exits.
-Default: 200.}
+convergence is not achieved then the algorithm stops and exits. Default: 200.}
 
-\item{threshold}{(numeric): A small value to check for convergence (if the estimated mean(s) are within this
-specified threshold then the algorithm stops and exit).
-
-\strong{Note: Choosing a very small value (0.0000001) for threshold can increase the runtime substantially
-and the algorithm may not converge. On the other hand, choosing a larger value (0.1)
-can lead to sub-optimal clustering. Default: 0.00001}.}
-
-\item{numrows}{(numeric): Number of rows in the dataset (After processing the missing values).}
-
-\item{numcols}{(numeric): Number of columns in the dataset (After processing the missing values).}
+\item{num_data}{(numeric): Number of rows in the dataset.}
 }
 \value{
 A list of objects. This list contains parameters associated with the
-        Gaussian(s) (posterior probabilities, mean, co-variance and priors)
+        Gaussian(s) (posterior probabilities, meu, co-variance and priors)
 
 \enumerate{
-        \item (1) Posterior Probabilities:  \strong{sample_out$prob}
-        (a matrix of posterior-probabilities for the points in the dataset.)
+        \item (1) Posterior Probabilities:  \strong{prob}
+        A matrix of posterior-probabilities for the points in the dataset.
 
-        \item (2) Mean(s): \strong{sample_out$mean}
+        \item (2) Meu: \strong{meu}: A matrix of meu(s). Each row in
+        the  matrix corresponds to one meu.
 
-        For multivariate data: It is a matrix of means for the Gaussian(s). Each row in
-        the  matrix corresponds to a mean for the Gaussian.
+        \item (3) Sigma: Co-variance matrices: \strong{sigma}: List of co-variance
+        matrices.
 
-        \item (3) Co-variance matrices (in case of multivariate data): \strong{sample_out$cov}
-        (list of co-variance matrices for the Gaussian(s))
-
-        \item (4) Priors: \strong{sample_out$prior}
-        (a vector of priors for the Gaussian(s).)
+        \item (4) Priors: \strong{prior}: A vector of prior.
         }
 }
 \description{
-Implements the EM* algorithm for multivariate data. This function is internally
-called by the dcem_star_train routine.
+Implements the EM* algorithm for multivariate data. This function is called
+by the dcem_star_train routine.
 }
 \references{
 Using data to build a better EM: EM* for big data.
@@ -66,5 +52,5 @@ Hasan Kurban, Mark Jenne, Mehmet M. Dalkilic
 \author{
 Parichit Sharma \email{parishar@iu.edu}, Hasan Kurban, Mark Jenne, Mehmet Dalkilic
 
-This work is partially supported by NCI Grant 1R01CA213466-01.
+This work is supported by NCI Grant 1R01CA213466-01.
 }

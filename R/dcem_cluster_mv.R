@@ -4,60 +4,53 @@ require(matrixcalc)
 
 #' dcem_cluster (multivariate data): Part of DCEM package.
 #'
-#' Implements the Expectation Maximization algorithm for multivariate data. This function is internally
-#' called by the dcem_train routine.
+#' Implements the Expectation Maximization algorithm for multivariate data. This function is called
+#' by the dcem_train routine.
 #'
 #' @param data A matrix: The dataset provided by the user.
 #'
-#' @param mean_mat (matrix): The matrix containing the initial mean(s) for the Gaussian(s).
+#' @param meu (matrix): The matrix containing the initial meu(s).
 #'
-#' @param cov_list (list): A list containing the initial covariance matrices for the Gaussian(s).
+#' @param sigma (list): A list containing the initial covariance matrices.
 #'
-#' @param prior_vec (vector): A vector containing the initial priors for the Gaussian(s).
+#' @param prior (vector): A vector containing the initial prior.
 #'
-#' @param num (numeric): The number of clusters specified by the user. Default value is 2.
+#' @param num_clusters (numeric): The number of clusters specified by the user. Default value is 2.
 #'
 #' @param iteration_count (numeric): The number of iterations for which the algorithm should run, if the
-#' convergence is not achieved within the specified threshold then the algorithm stops and exits.
-#' Default: 200.
+#' convergence is not achieved then the algorithm stops. Default: 200.
 #'
-#' @param threshold (numeric): A small value to check for convergence (if the estimated mean(s) are within this
+#' @param threshold (numeric): A small value to check for convergence (if the estimated meu are within this
 #' specified threshold then the algorithm stops and exit).
 #'
 #' \strong{Note: Choosing a very small value (0.0000001) for threshold can increase the runtime substantially
 #' and the algorithm may not converge. On the other hand, choosing a larger value (0.1)
 #' can lead to sub-optimal clustering. Default: 0.00001}.
 #'
-#' @param numrows (numeric): Number of rows in the dataset (After processing the missing values).
-#'
-#' @param numcols (numeric): Number of columns in the dataset (After processing the missing values).
+#' @param num_data (numeric): The total number of observations in the data.
 #'
 #' @return
 #'         A list of objects. This list contains parameters associated with the
-#'         Gaussian(s) (posterior probabilities, mean, co-variance and priors)
+#'         Gaussian(s) (posterior probabilities, meu, co-variance and prior)
 #'
 #'\enumerate{
-#'         \item (1) Posterior Probabilities:  \strong{sample_out$prob}
-#'         (a matrix of posterior-probabilities for the points in the dataset.)
+#'         \item (1) Posterior Probabilities:  \strong{prob} :A matrix of
+#'         posterior-probabilities.
 #'
-#'         \item (2) Mean(s): \strong{sample_out$mean}
+#'         \item (2) Meu: \strong{meu}: It is a matrix of meu(s). Each row in
+#'         the matrix corresponds to one meu.
 #'
-#'         For multivariate data: It is a matrix of means for the Gaussian(s). Each row in
-#'         the  matrix corresponds to a mean for the Gaussian.
+#'         \item (3) Sigma: Co-variance matrices: \strong{sigma}
 #'
-#'         \item (3) Co-variance matrices (in case of multivariate data): \strong{sample_out$cov}
-#'         (list of co-variance matrices for the Gaussian(s))
-#'
-#'         \item (4) Priors: \strong{sample_out$prior}
-#'         (a vector of priors for the Gaussian(s).)
+#'         \item (4) prior: \strong{prior}: A vector of prior.
 #'         }
 #'
 #' @usage
-#' dcem_cluster_mv(data, mean_mat, cov_list, prior_vec, num, iteration_count,
-#' threshold, numrows, numcols)
+#' dcem_cluster_mv(data, meu, sigma, prior, num_clusters, iteration_count,
+#' threshold, num_data)
 #'
 #' @references
-#'Using data to build a better EM: EM* for big data.
+#' Using data to build a better EM: EM* for big data.
 #'
 #' Hasan Kurban, Mark Jenne, Mehmet M. Dalkilic
 #' (2016) <https://doi.org/10.1007/s41060-017-0062-1>.
@@ -68,81 +61,73 @@ require(matrixcalc)
 
 dcem_cluster_mv <-
   function(data,
-           mean_mat,
-           cov_list,
-           prior_vec,
-           num,
+           meu,
+           sigma,
+           prior,
+           num_clusters,
            iteration_count,
            threshold,
-           numrows,
-           numcols)
+           num_data)
 
   {
-
     counter = 1
 
-    p_density = matrix(0,
-               nrow = num,
-               ncol = numrows,
-               byrow = TRUE)
+    weights <- matrix(0,
+                      nrow = num_clusters,
+                      ncol = num_data,
+                      byrow = TRUE)
+
+    tolerance <- .Machine$double.eps
 
     # Repeat till convergence threshold or iteration which-ever is earlier.
     while (counter <= iteration_count) {
-      old_mean = mean_mat
-      weight_mat = matrix(0,
-                          nrow = num,
-                          ncol = numrows,
-                          byrow = TRUE)
+      old_meu <- meu
+      weights <- matrix(0,
+                        nrow = num_clusters,
+                        ncol = num_data,
+                        byrow = TRUE)
 
-      for (clus in 1:num) {
-        p_density[clus,] = mvtnorm::dmvnorm(data, mean_mat[clus,] , cov_list[[clus]]) * prior_vec[clus]
-      }
+      # Expectation
+      weights = expectation_mv(data,
+                               weights,
+                               meu,
+                               sigma,
+                               prior,
+                               num_clusters,
+                               tolerance)
 
-      sum_p_density = colSums(p_density)
-      for (i in 1:num) {
-        for (j in 1:numrows) {
-          weight_mat[i, j] = p_density[i, j] / sum_p_density[j]
-        }
-      }
+      # Maximisation
+      out = maximisation_mv(data, weights, meu, sigma, prior, num_clusters, num_data)
+      meu = out$meu
+      sigma = out$sigma
+      prior = out$prior
 
-      mean_mat = weight_mat %*% data
-      mean_mat = mean_mat / rowSums(weight_mat)
+      # Find the difference in the meu
+      meu_diff <- sqrt(sum((meu - old_meu) ^ 2))
 
-      prior_vec = rowSums(weight_mat) / numrows
-
-      # Maximise co-variance and prior vec
-      for (clus in 1:num) {
-        cov_list[[clus]] = 0
-        temp = stats::cov.wt(data, weight_mat[clus,], cor = FALSE, center = TRUE, method = "unbiased")$cov
-
-        if (matrixcalc::is.singular.matrix(temp)) {
-          #print("Handling singularity condition.");
-          diag(temp) = diag(temp) + 0.01
-          cov_list[[clus]] = temp
-        }
-        else{
-          cov_list[[clus]] = temp
-        }
-
-      }
-
-      # Find the difference in the mean
-      mean_diff = (sum((mean_mat - old_mean) ^ 2))
-
-      if (!is.na(mean_diff) && mean_diff < threshold) {
-        #print((paste("Convergence at iteration number: ",counter)))
+      # Check convergence
+      if (!is.na(meu_diff) && round(meu_diff, 4) < threshold) {
+        print((paste(
+          "Convergence at iteration num_clustersber: ", counter
+        )))
         break
       }
 
-      if(counter == threshold) {
-        #print("Iteration threshold crossed. Stoping the execution.")
+      # Check iterations
+      else if (counter == iteration_count) {
+        print("Iteration threshold crossed. Stoping the execution.")
         break
       }
-
       counter = counter + 1
+
     }
 
-  output = list(prob = weight_mat,  mean = mean_mat, cov = cov_list, prior = prior_vec)
-  return(output)
+    output = list(
+      prob = weights,
+      'meu' = meu,
+      'sigma' = sigma,
+      'prior' = prior
+    )
+    return(output)
 
   }
