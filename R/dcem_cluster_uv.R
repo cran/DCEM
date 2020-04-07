@@ -49,6 +49,9 @@ require(matrixcalc)
 #'         deviation.
 #'
 #'         \item (4) prior: \strong{prior}: A vector of prior.
+#'
+#'         \item (5) Membership: \strong{membership}: A vector of
+#'         cluster membership for data.
 #'         }
 #'
 #' @usage
@@ -76,18 +79,56 @@ dcem_cluster_uv <-
            numcols)
 
   {
-    counter = 1
-    t_status = TRUE
 
+    # Initialize parameters
+    counter = 1
     weights = matrix(0,
                      nrow = num_clusters,
                      ncol = num_data,
                      byrow = TRUE)
+    # Get the machine tolerance for checking null values
+    # in liklihood matrix
     tolerance <- .Machine$double.eps
+    init_attempt = 1
+
+    # Checking for empty partitions
+    # and re-attempt initialization.
+    while(init_attempt < 5){
+
+      # Expectation
+      weights = expectation_uv(data,
+                               weights,
+                               meu,
+                               sigma,
+                               prior,
+                               num_clusters,
+                               tolerance)
+      part_size = apply(weights, 2, which.max)
+
+      if (length(unique(part_size)) < num_clusters) {
+        print(paste("Retrying on empty partition, attempt: ", init_attempt))
+        # Get new set of meu
+        meu <- meu_uv(data, num_clusters)
+        init_attempt = init_attempt + 1
+      }
+      # Break if no empty partitions
+      else if (length(unique(part_size)) == num_clusters){
+        break
+      }
+      # Inform user if non-empty clusters could not be
+      # found in 5 attempts.
+      else{
+        cat("The specified number of clusters:", num_clusters, "results in",
+            num_clusters - length(unique(part_size)), "empty clusters.",
+            "\nThe data may have lesser modalities. Please retry with less number of clusters.\n")
+        stop("Exiting...")
+      }
+    }
 
     #Repeat till threshold achieved or convergence whichever is earlier.
     while (counter <= iteration_count) {
 
+      # Store the current meu
       old_meu = meu
 
       # Expectation
@@ -99,9 +140,10 @@ dcem_cluster_uv <-
       sigma = out$sigma
       prior = out$prior
 
-      # Check convergence
-      mean_diff = sqrt(sum((meu - old_meu) ^ 2))
+      # Find the difference in the old and estimated meu values
+      mean_diff = sum((meu - old_meu) ^ 2)
 
+      # Check convergence
       if (!is.na(mean_diff) && round(mean_diff, 4) <= threshold) {
         print((paste("Convergence at iteration number: ", counter)))
         break
@@ -112,11 +154,16 @@ dcem_cluster_uv <-
         print("Maximum iterations reached. Halting.")
         break
       }
-
       counter = counter + 1
     }
 
-    output = list('prob' = weights, 'meu' = meu, 'sigma' = sigma, 'prior' = prior)
+    # Prepare output list
+    output = list('prob' = weights,
+                  'meu' = as.vector(meu),
+                  'sigma' = sigma,
+                  'prior' = prior,
+                  'membership' = apply(weights, 2, which.max)
+                  )
     return(output)
 
   }

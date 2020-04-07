@@ -18,23 +18,23 @@ The dcem_test performs the following steps in order:
 
     \item Read the data from the disk (from the file data/ionosphere_data.csv). The data folder is under the
     package installation folder. \item The dataset details can be see by typing \code{\link{ionosphere_data}} in
-    R-console or at \url{https://archive.ics.uci.edu/ml/datasets/ionosphere}.
+    R-console or at \url{http://archive.ics.uci.edu/ml/datasets/Ionosphere}.
 
      \item Clean the data (by removing the columns). \strong{The data should be cleaned
      before use.} Refer \strong{\code{\link{trim_data}}} to see what columns
      should be removed and how. The package provides the basic interface for removing
      columns.
 
-     \item Call the \code{\link{dcem_train}} on the cleaned data.
+     \item Call the \code{\link{dcem_star_train}} on the cleaned data.
 }
 }
 
 \section{Accessing the output parameters}{
 
 
-The function dcem_test() calls dcem_train() that returns a list of objects.
-This list contains estimated parameters of the Gaussian
-(posterior probabilities, meu, sigma and prior). The
+The function dcem_test() calls the \code{\link{dcem_star_train}}.
+It returns a list of objects as output. This list contains estimated
+parameters of the Gaussian (posterior probabilities, meu, sigma and prior). The
 parameters can be accessed as follows where sample_out is the list containing
 the output:
 
@@ -57,6 +57,9 @@ the output:
 
         \item (4) Priors: \strong{sample_out$prior}
         A vector of prior.
+
+        \item (5) Membership: \strong{membership}: A vector of cluster
+        membership for data.
         }
 }
 

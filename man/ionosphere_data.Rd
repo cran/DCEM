@@ -4,14 +4,16 @@
 \name{ionosphere_data}
 \alias{ionosphere_data}
 \title{Ionosphere data: A dataset of 351 radar readings}
-\format{A file with 351 rows and 35 columns of multivariate data in a csv file. All values are numeric.}
+\format{
+A file with 351 rows and 35 columns of multivariate data in a csv file. All values are numeric.
+}
 \source{
 Space Physics Group
 Applied Physics Laboratory
 Johns Hopkins University
 Johns Hopkins Road
 Laurel, MD 20723
-Web URL: \url{https://archive.ics.uci.edu/ml/datasets/ionosphere}
+Web URL: \url{http://archive.ics.uci.edu/ml/datasets/Ionosphere}
 
  \strong{References:}
  Sigillito, V. G., Wing, S. P., Hutton, L. V., & Baker, K. B. (1989).

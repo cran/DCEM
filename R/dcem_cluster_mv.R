@@ -43,6 +43,9 @@ require(matrixcalc)
 #'         \item (3) Sigma: Co-variance matrices: \strong{sigma}
 #'
 #'         \item (4) prior: \strong{prior}: A vector of prior.
+#'
+#'         \item (5) Membership: \strong{membership}: A vector of
+#'         cluster membership for data.
 #'         }
 #'
 #' @usage
@@ -70,18 +73,22 @@ dcem_cluster_mv <-
            num_data)
 
   {
+    # Initialize the parameters
     counter = 1
-
     weights <- matrix(0,
                       nrow = num_clusters,
                       ncol = num_data,
                       byrow = TRUE)
 
+    # Get the machine tolerance for checking null values
+    # in liklihood matrix
     tolerance <- .Machine$double.eps
-    chk_partition = 1
+    init_attempt = 1
 
-    # Checking for empty partitiion.
-    while(chk_partition < 5){
+    # Checking for empty partitions
+    # and re-attempt initialization.
+    while(init_attempt < 5){
+
       # Expectation
       weights = expectation_mv(data,
                                weights,
@@ -93,13 +100,16 @@ dcem_cluster_mv <-
       part_size = apply(weights, 2, which.max)
 
       if (length(unique(part_size)) < num_clusters) {
-        print(paste("Retrying on empty partition, attempt: ", chk_partition))
+        print(paste("Retrying on empty partition, attempt: ", init_attempt))
         meu <- meu_mv(data, num_clusters)
-        chk_partition = chk_partition + 1
+        init_attempt = init_attempt + 1
       }
+      # Break if no empty partitions
       else if (length(unique(part_size)) == num_clusters){
         break
       }
+      # Inform user if non-empty clusters could not be
+      # found in 5 attempts.
       else{
         cat("The specified number of clusters:", num_clusters, "results in",
             num_clusters - length(unique(part_size)), "empty clusters.",
@@ -108,9 +118,12 @@ dcem_cluster_mv <-
       }
     }
 
-    # Repeat till convergence threshold or iteration which-ever is earlier.
+    # Repeat till convergence threshold or iteration whichever is earlier.
     while (counter <= iteration_count) {
+      # Store the current meu
       old_meu <- meu
+
+      # Initialize the weight matrix
       weights <- matrix(0,
                         nrow = num_clusters,
                         ncol = num_data,
@@ -130,7 +143,7 @@ dcem_cluster_mv <-
       sigma = out$sigma
       prior = out$prior
 
-      # Find the difference in the meu
+      # Find the difference in the old and estimated meu values
       meu_diff <- sqrt(sum((meu - old_meu) ^ 2))
 
       # Check convergence
@@ -149,13 +162,14 @@ dcem_cluster_mv <-
       counter = counter + 1
     }
 
+    # Prepare output list
     output = list(
       prob = weights,
       'meu' = meu,
       'sigma' = sigma,
       'prior' = prior,
-      'count' = counter
+      'count' = counter,
+      'membership' = apply(weights, 2, which.max)
     )
     return(output)
-
   }

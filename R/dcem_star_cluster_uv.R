@@ -30,7 +30,7 @@ require(matrixcalc)
 #'         \item (1) Posterior Probabilities: \strong{prob}
 #'         A matrix of posterior-probabilities
 #'
-#'         \item (2) Meu: \strong{meu}: It is a vector of meus. Each element of
+#'         \item (2) Meu: \strong{meu}: It is a vector of meu. Each element of
 #'         the vector corresponds to one meu.
 #'
 #'         \item (3) Sigma: Standard-deviation(s): \strong{sigma}
@@ -38,6 +38,8 @@ require(matrixcalc)
 #'         For univariate data: Vector of standard deviation.
 #'
 #'         \item (4) Priors: \strong{prior}: A vector of priors.
+#'
+#'         \item (5) Membership: \strong{membership}: A vector of cluster membership for data.
 #'         }
 #'
 #' @usage
@@ -51,7 +53,6 @@ require(matrixcalc)
 #' @references
 #' Hasan Kurban, Mark Jenne, Mehmet M. Dalkilic
 #' (2016) <https://doi.org/10.1007/s41060-017-0062-1>.
-
 
 dcem_star_cluster_uv <-
 
@@ -70,18 +71,51 @@ dcem_star_cluster_uv <-
                      byrow = TRUE)
 
     counter = 1
+    # Get machine tolerance
     tolerance <- .Machine$double.eps
+    # Intialization attempts
+    init_attempt = 1
 
     # Create a list of heaps (one heap per cluster)
     heap_list <- rep(list(list()), num_clusters)
     index_list <- c()
     old_leaf_values <- c()
-    chk_count = 1
 
     # Expectation
     weights = expectation_uv(data, weights, meu, sigma, prior, num_clusters, tolerance)
     heap_index <- apply(weights, 2, which.max)
+
+    # Loop to ensure that no heap is empty
+    while (init_attempt < 5){
+
+      if(length(unique(heap_index)) < num_clusters){
+        print(paste("Retrying on empty partition, attempt: ", init_attempt))
+        meu = meu_uv(data, num_clusters)
+
+        # Expectation
+        weights = expectation_uv(data, weights, meu, sigma, prior, num_clusters, tolerance)
+        heap_index <- apply(weights, 2, which.max)
+        init_attempt = init_attempt + 1
+      }
+
+      # Break if none of the heap is empty
+      else if (length(unique(heap_index)) == num_clusters){
+        #print("Empty partition fixed.")
+        break
+      }
+
+      else if (init_attempt==5){
+      cat("The specified number of clusters:", num_clusters, "results in",
+          num_clusters - length(unique(heap_index)), "empty clusters.",
+          "\nThe data may have lesser modalities. Please retry or specify lesser number of clusters.\n")
+      stop("Exiting...")
+    }
+    }
+
+    # Normalize the probability weights
     data_prob <- apply(weights, 2, max)
+
+    # Store the cluster membership for data in cluster_map
     cluster_map <- heap_index
 
     # Maximisation
@@ -90,16 +124,8 @@ dcem_star_cluster_uv <-
     sd_vec = out$sigma
     prior = out$prior
 
-    # Setup heap
-    # loop to ensure that no heap is empty
-    while (chk_count < 5){
-
-    temp_heap_size = c()
-
-    # Creating heaps
     for (clus in 1:num_clusters) {
-
-      # Put the data in the heap (data belonging to their own clusters)
+      # Put the data in the matrix (data belonging to their own clusters)
       ind <- which(heap_index == clus)
       temp_matrix <- matrix(data_prob[ind])
       temp_matrix <- cbind(temp_matrix, ind)
@@ -107,34 +133,12 @@ dcem_star_cluster_uv <-
       heap_list[[clus]] <- temp_matrix
       #print(paste("heap: ", clus, "size: ", nrow(heap_list[[clus]])))
 
-      # Build the heap from data frames
+      # Build the heap from matrices
       temp_out <- build_heap(heap_list[[clus]])
       heap_list[[clus]] <- split(temp_out, 1:nrow(temp_out))
-
     }
 
-      # Continue while loop if any heap is empty
-      if(any(temp_heap_size==0)){
-        print(paste("heap was 0 so repeating: ", chk_count))
-        meu = meu_mv(data, num_clusters)
-        # Expectation
-        weights = expectation_mv(data, weights, meu, sigma, prior, num_clusters, tolerance)
-        heap_index <- apply(weights, 2, which.max)
-        data_prob <- apply(weights, 2, max)
-        cluster_map <- heap_index
-        chk_count =  chk_count + 1
-      }
-      # Break the while loop if none of the heap is empty
-      else{
-        # Maximisation
-        out = maximisation_mv(data, weights, meu, sigma, prior, num_clusters, num_data)
-        meu = out$meu
-        sigma = out$sigma
-        prior = out$prior
-        break
-      }
-    }
-
+    # Seperate the leaf and non-leaf nodes
     out = separate_data(heap_list, num_clusters)
     heap_list <- out[[1]]
     index_list <- unlist(out[[2]])
@@ -142,7 +146,7 @@ dcem_star_cluster_uv <-
     # Get the leaf nodes
     old_leaf_values <- c(old_leaf_values, index_list)
 
-    # Repeat till convergence
+    # Repeat till convergence threshold or iteration which-ever is earlier.
     while (counter <= iteration_count) {
 
       new_leaf_values <- c()
@@ -151,7 +155,7 @@ dcem_star_cluster_uv <-
                              ncol = length(index_list),
                              byrow = TRUE)
 
-      # Expectation
+      # Expectation only for leaf nodes (not for all data - save time and computation)
       temp_weights = expectation_uv(data[index_list,],
                                     temp_weights,
                                     meu,
@@ -159,10 +163,10 @@ dcem_star_cluster_uv <-
                                     prior,
                                     num_clusters,
                                     tolerance)
-
+      # Update the weights for leaf nodes only
       weights = update_weights(temp_weights, weights, index_list, num_clusters)
 
-
+      # Normalize the probability matrix
       sum_weights <- colSums(weights)
       weights <- sweep(weights, 2, sum_weights, '/')
       weights[is.nan(weights)] <- tolerance
@@ -174,6 +178,9 @@ dcem_star_cluster_uv <-
       sigma = out$sigma
       prior = out$prior
 
+      # Get the index of data which is present leaves
+      # Re-assign the leaf nodes based on their estimated probabilities
+      # Only leaf nodes are moved.
       leaves_ind <- index_list
 
       if (length(leaves_ind) == 1) {
@@ -186,7 +193,6 @@ dcem_star_cluster_uv <-
         new_liklihood_for_leaves <-
           unlist(apply(temp_weights, 2, max))
       }
-
 
       # Insert into new heap
       #print(paste("Inserting", length(leaves_ind)))
@@ -226,11 +232,13 @@ dcem_star_cluster_uv <-
       counter <- counter + 1
     }
 
+    # Prepare the output list
     output = list(
       prob = weights,
-      'meu' = meu,
+      'meu' = as.vector(meu),
       'sigma' = sigma,
-      'prior' = prior
+      'prior' = prior,
+      'membership' = apply(weights, 2, which.max)
     )
     return(output)
 

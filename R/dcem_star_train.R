@@ -45,6 +45,9 @@
 #'
 #'         \item (4) Priors: \strong{sample_out$prior}
 #'         A vector of priors.
+#'
+#'         \item (5) Membership: \strong{sample_out$membership}
+#'         A vector of cluster membership for data.
 #'         }
 #'
 #' @usage
@@ -81,6 +84,7 @@
 #' sample_mv_out$sigma
 #' sample_mv_out$prior
 #' sample_mv_out$prob
+#' print(sample_mv_out$membership)
 #'
 #' @author Parichit Sharma \email{parishar@iu.edu}, Hasan Kurban, Mark Jenne, Mehmet Dalkilic
 #'
@@ -103,7 +107,6 @@ dcem_star_train <-
 
     if (missing(num_clusters)) {
       num_clusters = 2
-
       print("Using default value for number of clusters = 2.")
     }
     else{
@@ -119,7 +122,7 @@ dcem_star_train <-
       print("Using the improved Kmeans++ initialisation scheme.")
     }
 
-
+    # Remove any missing data
     data <- apply(data, 2, as.numeric)
     data[is.na(data)] <- NULL
 
@@ -128,15 +131,18 @@ dcem_star_train <-
     num_data <- nrow(test_data)
     valid_columns <- ncol(test_data)
 
-    em_data_out = list()
+    # Variable to store the output
+    emstar_out = list()
 
+    # Call clustering routine for multivariate data
+    # Get the initial values for meu, sigma and priors
     if (valid_columns >= 2) {
 
       if (missing(seed_meu)){
       if (seeding == "rand"){
         meu = meu_mv(test_data, num_clusters)
       }
-      else{
+      else if(seeding == "improved"){
         meu = meu_mv_impr(test_data, num_clusters)
       }
       }
@@ -145,7 +151,7 @@ dcem_star_train <-
       }
       sigma = sigma_mv(num_clusters, valid_columns)
       priors = get_priors(num_clusters)
-      em_data_out = dcem_star_cluster_mv(
+      emstar_out = dcem_star_cluster_mv(
         test_data,
         meu,
         sigma,
@@ -155,16 +161,18 @@ dcem_star_train <-
         num_data)
     }
 
+    # Call clustering routine for univariate data
+    # Get the initial values for meu, sigma and priors
     if (valid_columns < 2) {
       if(seeding=="rand"){
         meu = meu_uv(test_data, num_clusters)
       }
-      else{
+      else if(seeding == "improved"){
         meu = meu_uv_impr(test_data, num_clusters)
       }
       sigma = sigma_uv(test_data, num_clusters)
       priors = get_priors(num_clusters)
-      em_data_out = dcem_star_cluster_uv(
+      emstar_out = dcem_star_cluster_uv(
         test_data,
         meu,
         sigma,
@@ -174,5 +182,5 @@ dcem_star_train <-
         iteration_count)
     }
 
-    return(em_data_out)
+    return(emstar_out)
   }
