@@ -42,12 +42,13 @@
 #'
 #'         For multivariate data: List of co-variance matrices for the Gaussian(s).
 #'
-#'         For univariate data: Vector of standard deviation for the Gaussian(s))
+#'         For univariate data: Vector of standard deviation for the Gaussian(s).
 #'
 #'         \item (4) Priors: \strong{sample_out$prior}: A vector of priors.
 #'
-#'         \item (5) Membership: \strong{sample_out$membership}: A vector of
-#'         cluster membership for data.
+#'         \item (5) Membership: \strong{sample_out$membership}: A dataframe of
+#'         cluster membership for data. Columns numbers are data indices and values
+#'         are the assigned clusters.
 #'         }
 #'
 #' @usage
@@ -123,7 +124,7 @@ dcem_train <-
       print(paste("Specified number of  clusters = ", num_clusters))
     }
 
-    if (missing(seeding) ) {
+    if (missing(seeding) || seeding == "rand") {
       seeding = "rand"
       print("Using the random initialization scheme.")
     }
@@ -177,7 +178,7 @@ dcem_train <-
     # Call clustering routine for univariate data
     # Get the initial values for meu, sigma and priors
     if (valid_columns < 2) {
-      if(seeding=="rand"){
+      if(seeding == "rand"){
         meu <- meu_uv(test_data, num_clusters)
       }
       else if(seeding == "improved"){

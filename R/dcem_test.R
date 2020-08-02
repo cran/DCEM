@@ -49,8 +49,9 @@ source("./R/dcem_train.R")
 #'         \item (4) Priors: \strong{sample_out$prior}
 #'         A vector of prior.
 #'
-#'         \item (5) Membership: \strong{membership}: A vector of cluster
-#'         membership for data.
+#'         \item (5) Membership: \strong{sample_out$membership}: A dataframe of
+#'         cluster membership for data. Columns numbers are data indices and values
+#'         are the assigned clusters.
 #'         }
 #'
 #' @usage
@@ -70,16 +71,21 @@ source("./R/dcem_train.R")
 dcem_test <- function()
 {
 
-  # Setting the filepath to read from the bundled csv file.
-  data_file =  file.path(trimws(getwd()),"data","ionosphere_data.csv")
+  # Setting the filepath to read from the bundled rda file.
+  data_file = system.file("data/ionosphere_data.rda")
 
+  ########
+  #### Deprecated code below, not needed anymore
+  #### Data is directly loaded using system.file
   # Reading the input file into a dataframe.
-  ionosphere_data = read.csv2(
-    file = data_file,
-    sep = ",",
-    header = FALSE,
-    stringsAsFactors = FALSE
-  )
+  # ionosphere_data = read.csv2(
+  #   file = data_file,
+  #   sep = ",",
+  #   header = FALSE,
+  #   stringsAsFactors = FALSE
+  # )
+  # usethis::use_data(ionosphere_data)
+  ##########
 
   # Cleaning the data by removing the 35th and 2nd column as they contain the labels and 0's respectively.
   ionosphere_data =  trim_data("2, 35", ionosphere_data)

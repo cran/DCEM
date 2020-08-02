@@ -14,6 +14,19 @@
 
 <title>DCEM</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 
 
 
@@ -233,14 +246,16 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 </div>
 <div id="installation-instructions" class="section level2">
-<h2>Installation Instructions**</h2>
+<h2>Installation Instructions</h2>
+<p><strong>Dependencies</strong> First, install all the required packages as follows:</p>
+<p>install.packages(c(“matrixcalc”, “mvtnorm”, “MASS”, “Rcpp”))</p>
 <div id="installing-from-cran" class="section level3">
 <h3>Installing from CRAN</h3>
 <p>Use install.packages() in the R console as follow:</p>
 <pre><code>install.packages(&quot;DCEM&quot;)</code></pre>
 <p><strong><em>Installing from the Source Package</em></strong></p>
 <p>Download the source tar ball for DCEM from <a href="https://github.com/parichit/DCEM/releases">Github</a> and install as follows:</p>
-<pre><code>R CMD install DCEM_2.0.2.tar.gz</code></pre>
+<pre><code>R CMD install DCEM_2.0.3.tar.gz</code></pre>
 </div>
 </div>
 <div id="quick-start" class="section level2">
@@ -286,7 +301,7 @@ ionosphere_data = read.csv2(
   )
   
 # Cleaning the data by removing the 35th and 2nd column as they contain the 
-# labels and 0's respectively.
+# labels and 0&#39;s respectively.
 ionosphere_data =  trim_data(&quot;2, 35&quot;, ionosphere_data)
  
  
@@ -311,7 +326,7 @@ ionosphere_data = read.csv2(
   )
   
 # Cleaning the data by removing the 35th and 2nd column as they contain the 
-# labels and 0's respectively.
+# labels and 0&#39;s respectively.
 ionosphere_data =  trim_data(&quot;2, 35&quot;, ionosphere_data)
  
  
