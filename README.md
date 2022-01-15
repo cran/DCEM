@@ -17,9 +17,9 @@ The package has been tested with both real and simulated datasets. The package c
 
 [Issues](https://github.com/parichit/DCEM/issues)
 
-*GitHub Repository Link*
+*Package Link on CRAN*
 
-[Github Repository](https://github.com/parichit/DCEM)
+[DCEM on CRAN](https://CRAN.R-project.org/package=DCEM)
   
   
 **Installation Instructions**
@@ -37,12 +37,34 @@ install.packages("DCEM"")
 **_Installing from the Source Package_**
 
 ```
-R CMD install DCEM_2.0.3.tar.gz
+R CMD install DCEM_2.0.5.tar.gz
 ```
 
 **How to use the Package (Example: Working with the default bundled dataset)**
 
 - For demonstration purpose, users can call the `dcem_test()` function from the R console. This function invokes the dcem_star_train() on the bundled `ionosphere_data`. Alternatively, a minimal quick start example is given below that explain how to cluster the `ionosphere_data` from scratch.
+
+```
+# Example: Using the dcem_test()
+
+# Load the library
+library("DCEM")
+
+# call the dcem_test() function and store the result in a variable
+sample_out = dcem_test()
+
+# Probe the returned values 
+# Note: Detailed description of the returned values is also given in the section
+# **_Displaying the output:_**
+
+sample_out$prob         # estimated posterior probabilities
+sample_out$meu          # estimated mean of the clusters
+sample_out$sigma        # estimated covariance matrices
+sample_out$priors       # estimated priors
+sample_out$memebership  # membership of data points based on maximum liklihood (posterior probabilities)
+```
+
+**An example of clustering the ionosphere data**
 
 - The DCEM package comes bundled with the ionosphere_data.csv for demonstration. Help about the dataset can be seen by typing `?ionosphere_data` in the R console. Additional details can be seen at the link [Ionosphere data](http://archive.ics.uci.edu/ml/datasets/Ionospher). 
 
@@ -62,7 +84,7 @@ ionosphere_data = read.csv2(
 Paste the below code in the R session to clean the dataset.
 
 ```
-ionosphere_data =  trim_data("35,2", ionosphere_data)
+ionosphere_data =  trim_data("35, 2", ionosphere_data)
 ```
 
 - **_Clustering the data:_** The dcem_train() learns the parameters of the Gaussian(s) from the input data.

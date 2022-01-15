@@ -28,6 +28,16 @@ document.addEventListener('DOMContentLoaded', function(e) {
 });
 </script>
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
 
 
 
@@ -255,13 +265,13 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <pre><code>install.packages(&quot;DCEM&quot;)</code></pre>
 <p><strong><em>Installing from the Source Package</em></strong></p>
 <p>Download the source tar ball for DCEM from <a href="https://github.com/parichit/DCEM/releases">Github</a> and install as follows:</p>
-<pre><code>R CMD install DCEM_2.0.3.tar.gz</code></pre>
+<pre><code>R CMD install DCEM_2.0.5.tar.gz</code></pre>
 </div>
 </div>
 <div id="quick-start" class="section level2">
 <h2>Quick Start</h2>
 <ul>
-<li><p>For demonstration purpose, use the <code>dcem_test()</code> function from the R console. This function invokes the dcem_star_train() on the bundeled <code>ionosphere_data</code>.</p></li>
+<li><p>For demonstration purpose, use the <code>dcem_test()</code> function from the R console. This function invokes the dcem_star_train() on the bundled <code>ionosphere_data</code>.</p></li>
 <li><p>The function <code>dcem_test()</code> returns a list containing the output i.e., posterior probabilities, meu, sigma, prior and cluster membership for data. The parameters can be accessed as follows where <code>sample_out</code> is the list containing the output:</p></li>
 </ul>
 <div id="call-the-dcem_test" class="section level3">
